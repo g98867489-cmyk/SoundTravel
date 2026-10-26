@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SoundTravel — sound se file bhejo</title>
+<meta name="description" content="Sound ke through file bhejo — bina internet, bina Bluetooth, bina server.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a0f13">
+<meta name="color-scheme" content="dark">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SoundTravel">
+<style>
+  :root{
+    --bg:#0a0f13; --panel:#111a20; --panel2:#17232b; --panel3:#1f2f38;
+    --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.16);
+    --text:#e9f2f5; --dim:#93a5b0; --faint:#5d7079;
+    --teal:#35d0ba; --teal-bg:rgba(53,208,186,.14);
+    --amber:#e6b455; --amber-bg:rgba(230,180,85,.14);
+    --rose:#e0716c;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--sans);color:var(--text);min-height:100vh;
+    padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+    background:
+      radial-gradient(800px 420px at 10% -8%, rgba(53,208,186,.10), transparent 62%),
+      radial-gradient(700px 400px at 92% 0%, rgba(230,180,85,.07), transparent 60%),
+      var(--bg);
+    background-attachment:fixed;-webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:680px;margin:0 auto}
+
+  header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .logo{
+    width:46px;height:46px;border-radius:13px;flex:none;display:grid;place-items:center;
+    background:linear-gradient(145deg,#1b3a3d,#0f2124);border:1px solid var(--line2);
+  }
+  .logo svg{width:24px;height:24px}
+  h1{font-size:1.35rem;font-weight:700;letter-spacing:-.01em}
+  .sub{font-family:var(--mono);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+
+  .tabs{display:flex;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px;margin-bottom:14px}
+  .tabs button{
+    flex:1;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--dim);background:none;border:0;border-radius:8px;padding:10px;cursor:pointer;transition:.14s;
+  }
+  .tabs button.on{background:var(--panel3);color:var(--text)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:13px}
+  .card-title{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.64rem;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none}
+  .dot.t{background:var(--teal)} .dot.g{background:var(--amber)}
+
+  .modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .seg{
+    font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+    padding:9px 14px;cursor:pointer;transition:.14s;
+  }
+  .seg:hover{background:var(--panel3);color:var(--text)}
+  .seg.on{background:var(--teal);border-color:var(--teal);color:#04140f;font-weight:600}
+
+  .drop{
+    display:flex;flex-direction:column;gap:5px;align-items:center;justify-content:center;
+    border:1.5px dashed var(--line2);border-radius:12px;padding:26px 16px;cursor:pointer;
+    text-align:center;transition:.15s;background:var(--panel2);
+  }
+  .drop:hover,.drop.over{border-color:var(--teal);background:var(--teal-bg)}
+  .drop b{font-size:.95rem}
+  .drop span{font-family:var(--mono);font-size:.66rem;color:var(--faint)}
+
+  textarea{
+    width:100%;min-height:96px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    color:var(--text);font-family:var(--mono);font-size:.78rem;padding:11px;resize:vertical;line-height:1.6;
+  }
+  textarea:focus{outline:none;border-color:var(--line2)}
+
+  select{
+    width:100%;font-family:var(--mono);font-size:.7rem;color:var(--dim);background:var(--panel2);
+    border:1px solid var(--line);border-radius:9px;padding:10px;cursor:pointer;
+  }
+  select:hover{color:var(--text)}
+  .chk{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:.78rem;color:var(--dim);cursor:pointer}
+  .chk input{accent-color:var(--teal);width:15px;height:15px}
+
+  .row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .btn{
+    font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+    padding:11px 16px;cursor:pointer;transition:.14s;display:inline-flex;align-items:center;gap:7px;
+    text-decoration:none;white-space:nowrap;
+  }
+  .btn:hover:not(:disabled){background:var(--panel3);color:var(--text)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn[hidden]{display:none}
+  .btn.gold{background:var(--amber);border-color:var(--amber);color:#1a1204;font-weight:600}
+  .btn.gold:hover:not(:disabled){background:#f0c470;color:#1a1204}
+  .btn.teal{background:var(--teal);border-color:var(--teal);color:#04140f;font-weight:600}
+
+  .stat{font-family:var(--mono);font-size:.68rem;color:var(--dim);line-height:1.85;margin-top:9px}
+  .stat b{color:var(--amber);font-weight:500}
+  .hint{font-family:var(--mono);font-size:.63rem;line-height:1.9;color:var(--faint);margin-top:10px}
+  .hint b{color:var(--dim);font-weight:400}
+
+  .fld{margin-top:12px}
+  .fld label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--faint);display:flex;justify-content:space-between;margin-bottom:6px}
+  .fld label b{color:var(--amber);font-weight:400}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;
+    background:var(--panel3);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--amber);border:2px solid #0a0f13;cursor:pointer}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--amber);
+    border:2px solid #0a0f13;cursor:pointer}
+
+  .txbars{display:flex;align-items:flex-end;gap:3px;height:44px;margin-bottom:14px;opacity:.35;transition:.2s}
+  .txbars.live{opacity:1}
+  .txbars i{flex:1;background:linear-gradient(180deg,var(--teal),#1b6f63);border-radius:2px;height:12%}
+  .txbars.live i{animation:bounce .9s ease-in-out infinite}
+  @keyframes bounce{0%,100%{height:14%}50%{height:100%}}
+
+  .level{height:8px;border-radius:8px;background:var(--panel3);overflow:hidden;margin-top:12px}
+  .level i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--amber));transition:width .08s linear}
+
+  .progress{height:8px;border-radius:8px;background:var(--panel3);overflow:hidden;margin:4px 0 2px}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--amber));transition:width .2s}
+
+  .warn{
+    background:var(--amber-bg);border:1px solid rgba(230,180,85,.3);border-radius:10px;
+    padding:11px 13px;font-size:.76rem;line-height:1.65;color:#f0d9a8;margin-top:11px;
+  }
+  .warn b{color:var(--amber)}
+
+  #preview{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+  #preview img,#preview video{max-width:100%;border-radius:10px;border:1px solid var(--line)}
+  #preview pre{
+    font-family:var(--mono);font-size:.7rem;background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:11px;max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+  }
+  audio{width:100%}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.6rem;
+    letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:99px;
+    background:var(--panel2);border:1px solid var(--line);color:var(--faint);
+  }
+  .pill.live{background:var(--teal-bg);border-color:rgba(53,208,186,.4);color:var(--teal)}
+  footer{text-align:center;font-family:var(--mono);font-size:.58rem;color:var(--faint);
+    letter-spacing:.08em;margin-top:20px;line-height:1.9}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#35d0ba" stroke-width="2" stroke-linecap="round">
+        <circle cx="4" cy="12" r="1.6" fill="#35d0ba" stroke="none"/>
+        <path d="M8 8.5a5 5 0 0 1 0 7"/>
+        <path d="M11 6a8.5 8.5 0 0 1 0 12"/>
+        <circle cx="20" cy="12" r="1.6" fill="#e6b455" stroke="none"/>
+        <path d="M16 8.5a5 5 0 0 0 0 7" stroke="#e6b455"/>
+      </svg>
+    </div>
+    <div>
+      <h1>SoundTravel</h1>
+      <div class="sub">Sound se data &middot; no net, no bluetooth</div>
+    </div>
+    <button class="btn" id="installBtn" hidden style="margin-left:auto">&#10515; Install</button>
+  </header>
+
+  <div class="tabs">
+    <button id="tabSend" class="on">Send</button>
+    <button id="tabRecv">Receive</button>
+  </div>
+
+  <!-- ================= SEND ================= -->
+  <div id="panelSend">
+
+    <div class="card">
+      <div class="card-title"><span class="dot t"></span>Kya bhejna hai</div>
+      <div class="modes" id="kindBtns">
+        <button class="seg on" data-kind="file">File</button>
+        <button class="seg" data-kind="text">Text / Link</button>
+      </div>
+
+      <div id="fileArea">
+        <label class="drop" id="drop">
+          <input type="file" id="fileInput" hidden>
+          <b>File chuno</b>
+          <span id="fileName">PDF, image, audio, video — kuch bhi</span>
+        </label>
+        <div class="fld">
+          <label>Photo quality <b>chhota = tez</b></label>
+          <select id="imgQuality">
+            <option value="900">Chhota — 900px (sabse tez)</option>
+            <option value="1400" selected>Medium — 1400px</option>
+            <option value="0">Full — compress nahi</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="textArea" hidden>
+        <textarea id="textInput" placeholder="Link ya message yahan likho..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot g"></span>Speed</div>
+      <div class="modes" id="modeBtns">
+        <button class="seg" data-mode="safe">Safe</button>
+        <button class="seg" data-mode="balanced">Balanced</button>
+        <button class="seg" data-mode="fast">Fast</button>
+        <button class="seg on" data-mode="turbo">Turbo</button>
+      </div>
+      <div class="stat" id="estimate">Pehle kuch chuno.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot t"></span>Transmit</div>
+      <div class="txbars" id="txbars"></div>
+      <div class="row">
+        <button class="btn gold" id="startBtn">&#9654; Start transmitting</button>
+        <button class="btn" id="stopBtn" disabled>&#9632; Stop</button>
+        <span class="pill" id="txPill">idle</span>
+      </div>
+
+      <div class="fld">
+        <label>Volume <b><span id="volV">100</span>%</b></label>
+        <input type="range" id="vol" min="10" max="100" value="100">
+      </div>
+
+      <div class="warn">
+        <b>Setup:</b> phone ka volume <b>full</b> karo, silent mode off, aur doosra phone
+        <b>10–20 cm</b> door rakho. Speaker ki taraf mic hona chahiye. Shaant kamra = zyada speed.<br><br>
+        <b>Turbo</b> sabse tez hai (177 B/s) par purane ya saste speaker pe fail ho sakta hai.
+        Agar receiver kuch na pakde to <b>Fast</b> ya <b>Balanced</b> pe aa jao.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= RECEIVE ================= -->
+  <div id="panelRecv" hidden>
+
+    <div class="card">
+      <div class="card-title"><span class="dot g"></span>Sunna</div>
+      <div class="row">
+        <button class="btn gold" id="listenBtn">&#127908; Start listening</button>
+        <button class="btn" id="resetBtn" disabled>Reset</button>
+        <span class="pill" id="rxPill">mic off</span>
+      </div>
+      <div class="level"><i id="levelBar"></i></div>
+      <div class="stat" id="rxStatus">Mic band hai. Start listening dabao.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot t"></span>Progress</div>
+      <div class="progress"><i id="prog"></i></div>
+      <div class="stat" id="rxStats">—</div>
+
+      <div id="result" hidden>
+        <div class="stat" id="resName"></div>
+        <div id="preview"></div>
+        <div class="row" style="margin-top:12px">
+          <a class="btn teal" id="dlBtn" download>&#10515; Download</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="dot g"></span>Dhyan rakhna</div>
+      <div class="hint">
+        Bhejne wale phone ke paas rakho, mic uski taraf. Agar progress ruk jaye to
+        phone thoda paas/kareeb karo ya volume badhao — data dobara bhejne par
+        apne aap bhar jayega (kuch bhi dobara nahi karna padega).
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    No server &middot; No internet &middot; No Bluetooth<br>
+    Sab kuch aapke device par
+  </footer>
+</div>
+
+<script src="protocol.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
